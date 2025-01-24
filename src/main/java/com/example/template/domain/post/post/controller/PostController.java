@@ -69,14 +69,14 @@ public class PostController {
                           Model model) {
 
         if (bindingResult.hasErrors()) {
-            String errMsg = bindingResult.getFieldErrors()
-                    .stream()
-                    .map(err -> err.getDefaultMessage())
-                    .sorted()
-                    .map(msg -> msg.split("-")[1])
-                    .collect(Collectors.joining("<br>"));
-
-            model.addAttribute("errMsg", errMsg);
+//            String errMsg = bindingResult.getFieldErrors()
+//                    .stream()
+//                    .map(err -> err.getDefaultMessage())
+//                    .sorted()
+//                    .map(msg -> msg.split("-")[1])
+//                    .collect(Collectors.joining("<br>"));
+//
+//            model.addAttribute("errMsg", errMsg);
             return "domain/post/post/write";
         }
 
