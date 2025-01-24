@@ -6,33 +6,51 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/posts")
-@Validated
 public class PostController {
 
     @GetMapping("/write")
     @ResponseBody
     public String showWrite() {
-        return getFormHtml("");
+        return getFormHtml("","","");
     }
 
     @AllArgsConstructor
     @Getter
     public static class WriteForm {
-        @NotBlank(message = "제목을 입력해주세요.") @Length(min = 5,message = "제목은 5글자 이상")
+        @NotBlank(message = "01-제목을 입력해주세요.")
+        @Length(min = 5,message = "02-제목은 5글자 이상")
         private String title;
-        @NotBlank(message = "내용을 입력해주세요.") @Length(min = 10,message = "내용은 10글자 이상")
+        @NotBlank(message = "03-내용을 입력해주세요.")
+        @Length(min = 10,message = "04-내용은 10글자 이상")
         private String content;
     }
 
 
     @PostMapping("/write")
     @ResponseBody
-    public String doWrite(@ModelAttribute @Valid WriteForm form) {
+    public String doWrite(@Valid WriteForm form, BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            String errMsg = bindingResult.getFieldErrors()
+                    .stream()
+                    .map(err -> err.getDefaultMessage())
+                    .sorted()
+                    .map(msg->msg.split("-")[1])
+                    .collect(Collectors.joining("<br>"));
+
+            return getFormHtml(errMsg,form.getTitle(),form.getContent());
+        }
+
         return """
                 <h1>게시물 조회</h1>
                 <div>%s</div>
@@ -40,14 +58,14 @@ public class PostController {
                 """.formatted(form.getTitle(), form.getContent());
     }
 
-    private String getFormHtml(String errorMsg) {
+    private String getFormHtml(String errorMsg,String title,String content) {
         return """
                 <div>%s</div>
                 <form method="post">
-                    <input type="text" name="title" placeholder="제목" /><br>
-                    <textarea name="content"></textarea><br>
+                    <input type="text" name="title" placeholder="제목" value="%s" /><br>
+                    <textarea name="content">%s</textarea><br>
                     <input type="submit" value="등록" /><br>
                 </form>
-                """.formatted(errorMsg);
+                """.formatted(errorMsg,title,content);
     }
 }
